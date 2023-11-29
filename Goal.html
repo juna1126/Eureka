@@ -196,7 +196,7 @@ tr:nth-child(even) {
     background: transparent;
   }
 
-  button {
+  loginsignup {
     display: inline-block;
     padding: 10px 20px;
     color: #fff;
@@ -225,6 +225,10 @@ tr:nth-child(even) {
     margin: 0;
   }
 
+  add {
+    color: black;
+  }
+
 
     </style>
 </head>
@@ -244,7 +248,7 @@ tr:nth-child(even) {
               <label for="signInPassword">Password</label>
               <input type="password" id="signInPassword">
             </div>
-            <button type="submit" id="signInButton" onclick="login()">Login</button>
+            <button class="loginsignup" type="submit" id="signInButton" onclick="login()">Login</button>
           </form>
         </div>
       
@@ -261,7 +265,7 @@ tr:nth-child(even) {
               <label for="signUpPassword">Password</label>
               <input type="password" id="signUpPassword">
             </div>
-            <button type="submit" id="signUpButton" onclick="signup()">Sign Up</button>
+            <button class="loginsignup" type="submit" id="signUpButton" onclick="signup()">Sign Up</button>
           </form>
         </div>
 
@@ -284,7 +288,7 @@ tr:nth-child(even) {
             <label>마감일: </label>
             <input type="date" id="deadlineInput">
         </div>
-        <button onclick="writeData()">목표 추가</button>
+        <button class="add" onclick="writeData()">목표 추가</button>
     </div>
  
     <div id="goal_list"  class="sorted-goal-list" style="display: none;">
