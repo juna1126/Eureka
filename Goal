@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-database.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-auth.js"></script>
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>목표 정렬 웹 페이지</title>
+    <style>
+
+       body, html {
+             font-family: 'Arial', sans-serif;
+             background-color: #f4f4f4; /* 연한 회색 배경 */
+             color: #333;
+             line-height: 1.6;
+             margin: 0;
+             padding: 0;
+             display: flex;
+             justify-content: space-between;
+             }
+
+
+        #nameSection {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        .inputBox {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #goalInputBox {
+            position: fixed; /* 목표 입력하기를 우측 하단에 고정 */
+            bottom: 8%;    /* 뷰포트의 하단에서 20px 떨어진 위치에 배치 */
+            left: 8%;     /* 뷰포트의 우측에서 20px 떨어진 위치에 배치 */
+        }
+       
+/* 정렬된 목표 리스트 섹션 스타일 */
+div[style*="width: 60%;"] {
+    position: fixed; /* 고정된 위치 지정 */
+    bottom: 35%; /* 하단으로부터의 거리 조정 */
+    right: 1.2%; /* 우측으로부터의 거리 */
+    width: auto; /* 너비 자동 조정 */
+    max-height: 400px; /* 최대 높이 조정 */
+    overflow-y: auto; /* 내용이 넘칠 경우 스크롤바 표시 */
+}
+
+#goalInputBox, #goal_list, #todayTasks {
+    display: none; /* 초기에는 이 요소들을 숨깁니다 */
+}
+
+
+	
+       
+
+.inputBox {
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #ddd; /* 경계선 추가 */
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: #4CAF50; /* 버튼 색상 */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.sorted-goal-list {
+    position: fixed; /* 위치 고정 */
+    right: 26%; /* 우측 여백 */
+    top: 57%; /* 상단 여백 */
+    width: 90%; /* 너비 */
+    max-width: 500px; /* 최대 너비 설정 */
+    overflow-y: auto; /* 내용이 넘칠 경우 스크롤 */
+    max-height: 70%; /* 최대 높이 */
+}
+
+@media (max-width: 768px) {
+    .sorted-goal-list {
+        width: 80%; /* 더 작은 화면에서 너비 조정 */
+        top: 60px; /* 상단 여백 조정 */
+        right: 10px; /* 우측 여백 조정 */
+    }
+}
+
+.container {
+    min-height: 100%;
+    padding: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;  /* Changed from column to row */
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* This adds space between the boxes */
+  }
+  
+  .login-box, .signup-box {
+        width: 300px; /* 너비 설정 */
+        height: 430px; /* 높이 설정 */
+        padding: 40px;
+        background: rgba(0, 0, 0, 0.7);
+        box-sizing: border-box;
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+
+  h2 {
+    margin: 0 0 30px;
+    padding: 0;
+    color: black;
+    text-align: center;
+    font-size: 48px;
+  }
+
+  .placeholder {
+    height: 78px; /* Placeholder height to match h2 element */
+    display: block; /* Ensures it takes up space as a block element */
+  }
+
+  .user-box {
+    flex-grow: 1;
+  }
+
+  .user-box input {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 30px;
+    border: none;
+    border-bottom: 1px solid #fff;
+    outline: none;
+    background: transparent;
+  }
+
+  button {
+    display: inline-block;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 16px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: 0.5s;
+    letter-spacing: 4px;
+    background: transparent;
+    border: 1px solid #fff;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #fff;
+    color: #000;
+    border-radius: 5px;
+    box-shadow: 0 0 5px #fff,
+                0 0 25px #fff,
+                0 0 50px #fff,
+                0 0 100px #fff;
+  }
+
+  .login-box p, .signup-box p {
+    color: #fff;
+    margin: 0;
+  }
+
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="login-box" id="loginForm">
+          <h2>Eisenhower</h2>
+          <p>Add that work.</p>
+          <form>
+            <div class="user-box">
+              <label for="signInEmail">Email</label>
+              <input type="text" id="signInEmail">
+            </div>
+            <div class="user-box">
+              <label for="signInPassword">Password</label>
+              <input type="password" id="signInPassword">
+            </div>
+            <button type="submit" id="signInButton" onclick="login()">Login</button>
+          </form>
+        </div>
+      
+        <div class="signup-box" id="signUpForm">
+          <div class="placeholder">Eisenhower</div> <!-- Placeholder to maintain layout -->
+          <p>Add that work.</p>
+          <form>
+            <div class="user-box">
+              <label for="signUpEmail">Email</label>
+              <input type="text" id="signUpEmail">
+            </div>
+            <div class="user-box">
+              <label for="signUpPassword">Password</label>
+              <input type="password" id="signUpPassword">
+            </div>
+            <button type="submit" id="signUpButton" onclick="signup()">Sign Up</button>
+          </form>
+        </div>
+
+    </div>
+    <div id="goalInputBox" class="inputBox" style="display: none;">
+        <h3>목표 입력하기</h3>
+        <div>
+            <label>목표: </label>
+            <input type="text" id="Goal">
+        </div>
+        <div>
+            <label>중요도 (1-10): </label>
+            <input type="number" id="importanceInput" min="1" max="10">
+        </div>
+        <div>
+            <label>긴급도 (1-10): </label>
+            <input type="number" id="emergencyInput" min="1" max="10">
+        </div>
+        <div>
+            <label>마감일: </label>
+            <input type="date" id="deadlineInput">
+        </div>
+        <button onclick="writeData()">목표 추가</button>
+    </div>
+ 
+    <div id="goal_list"  class="sorted-goal-list" style="display: none;">
+        <h2>정렬된 목표 리스트</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>목표</th>
+                    <th>중요도</th>
+                    <th>긴급도</th>
+                    <th>마감일</th>
+                </tr>
+            </thead>
+            <tbody id="goalList">
+            </tbody>
+        </table>
+    </div>
+
+<div id="todayTasks" style="position: fixed; top: 20px; right: 20px; width: 60%; display: none;" >
+    <h2>오늘 할 일</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>목표</th>
+                <th>중요도</th>
+                <th>긴급도</th>
+                <th>마감일</th>
+            </tr>
+        </thead>
+        <tbody id="todayTaskList">
+        </tbody>
+    </table>
+</div>
+
+ 
+
+    <script>
+
+    var firebaseConfig = {
+        apiKey: "AIzaSyCWya5cdmV31Mh4hsiQbGxNBy9rEEcj1Ak",
+        authDomain: "goal-3e7c0.firebaseapp.com",
+        databaseURL: "https://goal-3e7c0-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "goal-3e7c0",
+        storageBucket: "goal-3e7c0.appspot.com",
+        messagingSenderId: "367138004790",
+        appId: "1:367138004790:web:adfb2a07f686a849ac9d97",
+        measurementId: "G-3BC8SBXDN2"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+
+        // Firebase Authentication 초기화
+        var auth = firebase.auth();
+
+        // Firebase 데이터베이스 참조
+        var database = firebase.database();
+
+        // 로그인
+        function login() {
+            event.preventDefault()
+            var signInEmail = document.getElementById("signInEmail").value;
+            var signInPassword = document.getElementById("signInPassword").value;
+
+            auth.signInWithEmailAndPassword(signInEmail, signInPassword)
+                .then(function(userCredential) {
+                var user = userCredential.user;
+                showUserDashboard(user);
+                displayGoals();
+                })
+                .catch(function(error) {
+                alert("로그인 실패: " + error.message);
+                });
+        }
+
+        // 회원가입
+        function signup() {
+            var signUpEmail = document.getElementById("signUpEmail").value;
+            var signUpPassword = document.getElementById("signUpPassword").value;
+
+            auth.createUserWithEmailAndPassword(signUpEmail, signUpPassword)
+                .then(function(userCredential) {
+                var user = userCredential.user;
+                alert("회원가입 성공");
+                })
+                .catch(function(error) {
+                alert("회원가입 실패: " + error.message);
+                });
+            }
+
+        // 페이지 로드 시 현재 로그인 상태 확인
+        window.onload = function() {
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    showUserDashboard(); // 이미 로그인되어 있으면 대시보드 표시
+                    displayGoals();
+                } else {
+                    hideUserDashboard(); // 로그인되어 있지 않으면 로그인 및 회원가입 폼 표시
+                }
+            });
+        };
+
+        // 사용자 대시보드 표시
+        function showUserDashboard(user) {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("signUpForm").style.display = "none";
+            document.getElementById("goalInputBox").style.display = "block";
+            document.getElementById("goal_list").style.display = "block";
+            document.getElementById("todayTasks").style.display = "block";
+            }
+
+        // 사용자 대시보드 숨기기
+        function hideUserDashboard() {
+            document.getElementById("loginForm").style.display = "flex";
+            document.getElementById("signUpForm").style.display = "flex";
+            document.getElementById("goalInputBox").style.display = "none";
+            document.getElementById("goal_list").style.display = "none";
+            document.getElementById("todayTasks").style.display = "none";
+            }
+
+    let goals = [];
+        
+    // 데이터 쓰기
+    function writeData() {
+        event.preventDefault()
+        var Goal = document.getElementById("Goal").value;
+        var importance = document.getElementById("importanceInput").value;
+        var emergency = document.getElementById("emergencyInput").value;
+        var deadline = document.getElementById("deadlineInput").value;
+        var user = firebase.auth().currentUser;
+        
+        if (importance < 1 || importance > 10 || emergency < 1 || emergency > 10) {
+                alert('중요도와 긴급도는 1부터 10까지의 숫자만 입력 가능합니다.');
+                return;
+            }
+
+        if (user) {
+        var userId = user.uid;
+        database.ref("user_data/" + userId).push({
+            Goal: Goal,
+            importance: importance,
+            emergency: emergency,
+            deadline: deadline
+        });
+        
+        database.ref("user_data/" + userId).on("child_added", function(snapshot) {
+            var goal = snapshot.val();
+        });
+        
+        } else {
+        alert("로그인한 사용자만 데이터를 저장할 수 있습니다.");
+        }
+    }
+
+    function addData() {
+        goals.push({
+                goal: goal.Goal,
+                importance: goal.importance,
+                emergency: goal.emergency,
+                deadline: goal.deadline
+            });
+        goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
+        displayGoals();
+      
+        
+    }
+
+
+    // 데이터 읽기 및 표시
+
+    function displayGoals() {
+        const todayList = document.getElementById("todayTaskList");
+        const goalList = document.getElementById("goalList");
+        todayList.innerHTML = '';
+        goalList.innerHTML = '';
+        var user = firebase.auth().currentUser;
+
+        firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            showUserDashboard(user);
+            var userId = user.uid;
+            database.ref("user_data/" + userId).on("child_added", function(snapshot) {
+            var goal = snapshot.val();
+            goals.push({
+                goal: goal.Goal,
+                importance: goal.importance,
+                emergency: goal.emergency,
+                deadline: goal.deadline
+            });
+            goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
+            console.log(goal)
+            });
+        } else {
+            hideUserDashboard();
+        }
+        });
+
+        // 상위 5개의 목표를 '오늘 할 일'에 표시
+        const todayTasks = goals.slice(0, 5);
+        console.log(todayTasks)
+        for (let goal of todayTasks) {
+            todayList.innerHTML += `
+                <tr>
+                    <td>${goal.goal}</td>
+                    <td>${goal.importance}</td>
+                    <td>${goal.emergency}</td>
+                    <td>${goal.deadline}</td>
+                    <td>
+                        <button onclick="deleteGoal(${goals.indexOf(goal)})">삭제</button>
+                    </td>
+                </tr>`;
+        }
+
+        // 6번째 목표부터 '정렬된 목표리스트'에 표시
+        const remainingGoals = goals.slice(5);
+        for (let goal of remainingGoals) {
+            goalList.innerHTML += `
+                <tr>
+                    <td>${goal.goal}</td>
+                    <td>${goal.importance}</td>
+                    <td>${goal.emergency}</td>
+                    <td>${goal.deadline}</td>
+                    <td>
+                        <button onclick="deleteGoal(${goals.indexOf(goal)})">삭제</button>
+                    </td>
+                </tr>`;
+        }
+    }
+
+
+
+        function deleteGoal(index) {
+             goals.splice(index, 1); // 해당 인덱스의 목표 삭제
+             displayGoals();
+         }
+
+ 
+    </script>
+
+
+</body>
+</html>
