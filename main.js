@@ -81,7 +81,7 @@ var firebaseConfig = {
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("signUpForm").style.display = "none";
         document.getElementById("logout").style.display = "flex";
-        document.getElementById('wise_saying').style.display = "flex";
+        document.getElementById('wise_saying').style.display = "block";
         document.getElementById("goalInputBox").style.display = "block";
         document.getElementById("goal_list").style.display = "block";
         document.getElementById("todayTasks").style.display = "block";
@@ -102,7 +102,7 @@ var firebaseConfig = {
         async function fetchQuote() {
             try {
                 // 서버의 'get-quote' 엔드포인트로 요청을 보냅니다.
-                const response = await fetch('http://localhost:4000/get-quote', {
+                const response = await fetch('http://localhost:3000/get-quote', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -161,52 +161,56 @@ function writeData() {
 
 // 데이터 읽기 및 표시
 function displayGoals() {
-const todayList = document.getElementById("todayTaskList");
-const goalList = document.getElementById("goalList");
-todayList.innerHTML = '';
-goalList.innerHTML = '';
-var user = firebase.auth().currentUser;
+    const todayList = document.getElementById("todayTaskList");
+    const goalList = document.getElementById("goalList");
+    todayList.innerHTML = '';
+    goalList.innerHTML = '';
+    var user = firebase.auth().currentUser;
 
-if (user) {
-    var userId = user.uid;
-    database.ref("user_data/" + userId).once("value", function(snapshot) {
-        goals = []; // 목표 배열 초기화
-        snapshot.forEach(function(childSnapshot) {
-            var goal = childSnapshot.val();
-            goals.push({
-                goal: goal.Goal,
-                importance: goal.importance,
-                emergency: goal.emergency,
-                deadline: goal.deadline
+    if (user) {
+        var userId = user.uid;
+        database.ref("user_data/" + userId).once("value", function(snapshot) {
+            goals = []; // 목표 배열 초기화
+            snapshot.forEach(function(childSnapshot) {
+                var goalKey = childSnapshot.key; // 목표의 고유 식별자(키) 가져오기
+                var goal = childSnapshot.val();
+                goals.push({
+                    key: goalKey,
+                    goal: goal.Goal,
+                    importance: goal.importance,
+                    emergency: goal.emergency,
+                    deadline: goal.deadline
+                });
             });
+            goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
+
+            // 상위 5개의 목표를 '오늘 할 일'에 표시
+            const todayTasks = goals.slice(0, 5);
+            for (let goal of todayTasks) {
+                todayList.innerHTML += `
+                    <tr>
+                        <td>${goal.goal}</td>
+                        <td>${goal.importance}</td>
+                        <td>${goal.emergency}</td>
+                        <td>${goal.deadline}</td>
+                        <td><button class="addbutton" onclick="deleteGoal('${goal.key}')">삭제</button></td>
+                    </tr>`;
+            }
+
+            // 나머지 목표들을 '정렬된 목표 리스트'에 표시
+            const remainingGoals = goals.slice(5);
+            for (let goal of remainingGoals) {
+                goalList.innerHTML += `
+                    <tr>
+                        <td>${goal.goal}</td>
+                        <td>${goal.importance}</td>
+                        <td>${goal.emergency}</td>
+                        <td>${goal.deadline}</td>
+                        <td><button class="addbutton" onclick="deleteGoal('${goal.key}')">삭제</button></td>
+                    </tr>`;
+            }
         });
-        goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
-
-        // 상위 5개의 목표를 '오늘 할 일'에 표시
-        const todayTasks = goals.slice(0, 5);
-        for (let goal of todayTasks) {
-            todayList.innerHTML += `
-                <tr>
-                    <td>${goal.goal}</td>
-                    <td>${goal.importance}</td>
-                    <td>${goal.emergency}</td>
-                    <td>${goal.deadline}</td>
-                </tr>`;
-        }
-
-        // 나머지 목표들을 '정렬된 목표 리스트'에 표시
-        const remainingGoals = goals.slice(5);
-        for (let goal of remainingGoals) {
-            goalList.innerHTML += `
-                <tr>
-                    <td>${goal.goal}</td>
-                    <td>${goal.importance}</td>
-                    <td>${goal.emergency}</td>
-                    <td>${goal.deadline}</td>
-                </tr>`;
-        }
-    });
-}
+    }
 }
 
 // 변수를 추가하여 중복 호출 방지
@@ -265,4 +269,22 @@ function checkDuplicateAndSave(userId, newData) {
             alert("데이터 저장 실패: " + error.message);
             isWritingData = false; // 데이터 저장 실패 시 변수 초기화
         });
+}
+
+// 목표 삭제 함수
+function deleteGoal(goalKey) {
+    var user = firebase.auth().currentUser;
+    if (user) {
+        var userId = user.uid;
+        database.ref("user_data/" + userId + "/" + goalKey).remove()
+        .then(function() {
+            console.log("목표 삭제 성공");
+            displayGoals(); // 목표 목록 새로고침
+        })
+        .catch(function(error) {
+            console.error("목표 삭제 실패: ", error);
+        });
+    } else {
+        alert("로그인한 사용자만 목표를 삭제할 수 있습니다.");
+    }
 }
