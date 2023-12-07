@@ -24,15 +24,7 @@
              }
 
 
-        #nameSection {
-            width: 30%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding-top: 50px;
-        }
-
+        
         .inputBox {
             background-color: white;
             padding: 15px;
@@ -133,6 +125,10 @@ tr:nth-child(even) {
     }
 }
 
+lable {
+    color: white;
+}
+
 .container {
     min-height: 100%;
     padding: 40px;
@@ -155,6 +151,7 @@ tr:nth-child(even) {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        
     }
 
 
@@ -166,7 +163,7 @@ tr:nth-child(even) {
     font-size: 48px;
   }
 
-  h3 {
+  .box {
     margin: 0 0 30px;
     padding: 0;
     color: #fff;
@@ -196,7 +193,7 @@ tr:nth-child(even) {
     background: transparent;
   }
 
-  loginsignup {
+  button {
     display: inline-block;
     padding: 10px 20px;
     color: #fff;
@@ -207,6 +204,15 @@ tr:nth-child(even) {
     letter-spacing: 4px;
     background: transparent;
     border: 1px solid #fff;
+    cursor: pointer;
+  }
+
+  .addbutton {
+    background-color: #4CAF50; /* 버튼 색상 */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
     cursor: pointer;
   }
 
@@ -225,19 +231,30 @@ tr:nth-child(even) {
     margin: 0;
   }
 
-  add {
-    color: black;
-  }
+  #wise_saying {
+    position: relative;
+    margin-top: 20px;
+   
+}
+#logoutAndQuote {
+    display: flex;
+    flex-direction: column; /* 자식 요소들을 세로로 쌓기 */
+    align-items: center; /* 중앙 정렬 */
+    gap: 20px; /* 요소들 사이 간격 */
+}
 
+/* 다른 스타일은 여기에 기존의 스타일을 추가하거나 수정하세요 */
 
     </style>
-</head>
+    </head>
 
 <body>
+    
 
+    <!-- 로그인 회원가입 창 -->
     <div class="container">
         <div class="login-box" id="loginForm">
-          <h3>Eisenhower</h3>
+          <h2 class="box">Eisenhower</h2>
           <p>Add that work.</p>
           <form>
             <div class="user-box">
@@ -248,13 +265,12 @@ tr:nth-child(even) {
               <label for="signInPassword">Password</label>
               <input type="password" id="signInPassword">
             </div>
-            <button class="loginsignup" type="submit" id="signInButton" onclick="login()">Login</button>
+            <button type="submit" id="signInButton" onclick="login()">Login</button>
           </form>
         </div>
       
         <div class="signup-box" id="signUpForm">
-          <div class="placeholder"></div>
-          <h3>Eisenhower</h3> <!-- Placeholder to maintain layout -->
+          <h2 class="box">Eisenhower</h2> <!-- Placeholder to maintain layout -->
           <p>Add that work.</p>
           <form>
             <div class="user-box">
@@ -265,12 +281,25 @@ tr:nth-child(even) {
               <label for="signUpPassword">Password</label>
               <input type="password" id="signUpPassword">
             </div>
-            <button class="loginsignup" type="submit" id="signUpButton" onclick="signup()">Sign Up</button>
+            <button type="submit" id="signUpButton" onclick="signup()">Sign Up</button>
           </form>
         </div>
 
+        <div id="logoutAndQuote">
+            <!-- 로그아웃 창 -->
+            <div id="logout" style="display: none;">
+                <button class="addbutton" id="logoutButton" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="wise_saying" style="display: none;">
+                <h1>오늘을 힘나게 해주는 명언</h1>
+                <p id="quote">명언을 불러오는 중...</p>
+            </div>
+        </div>
+
+    <!-- 목표입력창 -->
     </div>
-    <div id="goalInputBox" class="inputBox" style="display: none;">
+    <div id="goalInputBox" class="inputBox">
         <h3>목표 입력하기</h3>
         <div>
             <label>목표: </label>
@@ -288,9 +317,10 @@ tr:nth-child(even) {
             <label>마감일: </label>
             <input type="date" id="deadlineInput">
         </div>
-        <button class="add" onclick="writeData()">목표 추가</button>
+        <button class="addbutton" onclick="writeData()">목표 추가</button>
     </div>
- 
+
+    <!-- 나머지 목표들 보여주는 창 -->
     <div id="goal_list"  class="sorted-goal-list" style="display: none;">
         <h2>정렬된 목표 리스트</h2>
         <table>
@@ -307,226 +337,24 @@ tr:nth-child(even) {
         </table>
     </div>
 
-<div id="todayTasks" style="position: fixed; top: 20px; right: 20px; width: 60%; display: none;" >
-    <h2>오늘 할 일</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>목표</th>
-                <th>중요도</th>
-                <th>긴급도</th>
-                <th>마감일</th>
-            </tr>
-        </thead>
-        <tbody id="todayTaskList">
-        </tbody>
-    </table>
-</div>
-
- 
-
-    <script>
-
-    var firebaseConfig = {
-        apiKey: "AIzaSyCWya5cdmV31Mh4hsiQbGxNBy9rEEcj1Ak",
-        authDomain: "goal-3e7c0.firebaseapp.com",
-        databaseURL: "https://goal-3e7c0-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "goal-3e7c0",
-        storageBucket: "goal-3e7c0.appspot.com",
-        messagingSenderId: "367138004790",
-        appId: "1:367138004790:web:adfb2a07f686a849ac9d97",
-        measurementId: "G-3BC8SBXDN2"
-        };
-
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-
-        // Firebase Authentication 초기화
-        var auth = firebase.auth();
-
-        // Firebase 데이터베이스 참조
-        var database = firebase.database();
-
-        // 로그인
-        function login() {
-            event.preventDefault()
-            var signInEmail = document.getElementById("signInEmail").value;
-            var signInPassword = document.getElementById("signInPassword").value;
-
-            auth.signInWithEmailAndPassword(signInEmail, signInPassword)
-                .then(function(userCredential) {
-                var user = userCredential.user;
-                showUserDashboard(user);
-                displayGoals();
-                })
-                .catch(function(error) {
-                alert("로그인 실패: " + error.message);
-                });
-        }
-
-        // 회원가입
-        function signup() {
-            var signUpEmail = document.getElementById("signUpEmail").value;
-            var signUpPassword = document.getElementById("signUpPassword").value;
-
-            auth.createUserWithEmailAndPassword(signUpEmail, signUpPassword)
-                .then(function(userCredential) {
-                var user = userCredential.user;
-                alert("회원가입 성공");
-                })
-                .catch(function(error) {
-                alert("회원가입 실패: " + error.message);
-                });
-            }
-
-        // 페이지 로드 시 현재 로그인 상태 확인
-        window.onload = function() {
-            auth.onAuthStateChanged(function(user) {
-                if (user) {
-                    showUserDashboard(); // 이미 로그인되어 있으면 대시보드 표시
-                    displayGoals();
-                } else {
-                    hideUserDashboard(); // 로그인되어 있지 않으면 로그인 및 회원가입 폼 표시
-                }
-            });
-        };
-
-        // 사용자 대시보드 표시
-        function showUserDashboard(user) {
-            document.getElementById("loginForm").style.display = "none";
-            document.getElementById("signUpForm").style.display = "none";
-            document.getElementById("goalInputBox").style.display = "block";
-            document.getElementById("goal_list").style.display = "block";
-            document.getElementById("todayTasks").style.display = "block";
-            }
-
-        // 사용자 대시보드 숨기기
-        function hideUserDashboard() {
-            document.getElementById("loginForm").style.display = "flex";
-            document.getElementById("signUpForm").style.display = "flex";
-            document.getElementById("goalInputBox").style.display = "none";
-            document.getElementById("goal_list").style.display = "none";
-            document.getElementById("todayTasks").style.display = "none";
-            }
-
-    let goals = [];
-        
-    // 데이터 쓰기
-    function writeData() {
-        event.preventDefault()
-        var Goal = document.getElementById("Goal").value;
-        var importance = document.getElementById("importanceInput").value;
-        var emergency = document.getElementById("emergencyInput").value;
-        var deadline = document.getElementById("deadlineInput").value;
-        var user = firebase.auth().currentUser;
-        
-        if (importance < 1 || importance > 10 || emergency < 1 || emergency > 10) {
-                alert('중요도와 긴급도는 1부터 10까지의 숫자만 입력 가능합니다.');
-                return;
-            }
-
-        if (user) {
-        var userId = user.uid;
-        database.ref("user_data/" + userId).push({
-            Goal: Goal,
-            importance: importance,
-            emergency: emergency,
-            deadline: deadline
-        });
-        
-        database.ref("user_data/" + userId).on("child_added", function(snapshot) {
-            var goal = snapshot.val();
-        });
-        
-        } else {
-        alert("로그인한 사용자만 데이터를 저장할 수 있습니다.");
-        }
-    }
-
-    function addData() {
-        goals.push({
-                goal: goal.Goal,
-                importance: goal.importance,
-                emergency: goal.emergency,
-                deadline: goal.deadline
-            });
-        goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
-        displayGoals();
-      
-        
-    }
-
-
-    // 데이터 읽기 및 표시
-
-    function displayGoals() {
-        const todayList = document.getElementById("todayTaskList");
-        const goalList = document.getElementById("goalList");
-        todayList.innerHTML = '';
-        goalList.innerHTML = '';
-        var user = firebase.auth().currentUser;
-
-        firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-            showUserDashboard(user);
-            var userId = user.uid;
-            database.ref("user_data/" + userId).on("child_added", function(snapshot) {
-            var goal = snapshot.val();
-            goals.push({
-                goal: goal.Goal,
-                importance: goal.importance,
-                emergency: goal.emergency,
-                deadline: goal.deadline
-            });
-            goals.sort((a, b) => (b.importance + b.emergency) - (a.importance + a.emergency));
-            console.log(goal)
-            });
-        } else {
-            hideUserDashboard();
-        }
-        });
-
-        // 상위 5개의 목표를 '오늘 할 일'에 표시
-        const todayTasks = goals.slice(0, 5);
-        console.log(todayTasks)
-        for (let goal of todayTasks) {
-            todayList.innerHTML += `
+    <!-- 중요목표들 보여주는 창 -->
+    <div id="todayTasks" style="position: fixed; top: 20px; right: 20px; width: 60%; display: none;" >
+        <h2>오늘 할 일</h2>
+        <table>
+            <thead>
                 <tr>
-                    <td>${goal.goal}</td>
-                    <td>${goal.importance}</td>
-                    <td>${goal.emergency}</td>
-                    <td>${goal.deadline}</td>
-                    <td>
-                        <button onclick="deleteGoal(${goals.indexOf(goal)})">삭제</button>
-                    </td>
-                </tr>`;
-        }
+                    <th>목표</th>
+                    <th>중요도</th>
+                    <th>긴급도</th>
+                    <th>마감일</th>
+                </tr>
+            </thead>
+            <tbody id="todayTaskList">
+            </tbody>
+        </table>
+    </div>
 
-        // 6번째 목표부터 '정렬된 목표리스트'에 표시
-        const remainingGoals = goals.slice(5);
-        for (let goal of remainingGoals) {
-            goalList.innerHTML += `
-                <tr>
-                    <td>${goal.goal}</td>
-                    <td>${goal.importance}</td>
-                    <td>${goal.emergency}</td>
-                    <td>${goal.deadline}</td>
-                    <td>
-                        <button onclick="deleteGoal(${goals.indexOf(goal)})">삭제</button>
-                    </td>
-                </tr>`;
-        }
-    }
-
-
-
-        function deleteGoal(index) {
-             goals.splice(index, 1); // 해당 인덱스의 목표 삭제
-             displayGoals();
-         }
-
- 
-    </script>
+    <script src="main.js"></script>
 
 
 </body>
